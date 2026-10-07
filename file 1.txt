@@ -1,0 +1,30 @@
+from flask import Flask, request, jsonify
+import os
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return jsonify(service="Kgotla Tender Shield Broker", status="LIVE - No password leak", endpoints=["/score-tender","/capture-lead","/health"])
+
+@app.route("/health")
+def health():
+    return jsonify(ok=True)
+
+@app.route("/score-tender", methods=["POST"])
+def score():
+    text = request.json.get("text","") if request.is_json else ""
+    risks=[]
+    if "CSD" not in text: risks.append("Missing CSD - client must register on CSD")
+    if "CIDB" not in text: risks.append("Check CIDB grading required")
+    if "SARS" not in text: risks.append("Add Tax Clearance")
+    score_val = max(10, 100 - len(risks)*25)
+    return jsonify(score=score_val, risks=risks, advice="Kgotla can fix in 24h - WhatsApp Thuli")
+
+@app.route("/capture-lead", methods=["POST"])
+def lead():
+    data = request.get_json() or {}
+    print(f"LEAD: {data}")
+    return jsonify(ok=True, message="Lead received - Thuli will WhatsApp in 15 mins")
+
+if __name__=="__main__":
+    app.run(host="0.0.0.0", port=8080)
